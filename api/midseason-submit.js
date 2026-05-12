@@ -54,26 +54,25 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         parent: { database_id: NOTION_DB_ID },
         properties: {
-          // ※ 아래 키 이름은 Notion DB 실제 칼럼명과 정확히 일치해야 함
-          '브랜드명': {
+          '업체명': {
             title: [{ text: { content: brandName } }],
           },
-          '담당자명': {
+          '성함': {
             rich_text: [{ text: { content: managerName } }],
           },
           '전화번호': {
-            phone_number: phoneNumber,
+            rich_text: [{ text: { content: phoneNumber } }],
           },
-          '배송주소': {
+          '주소': {
             rich_text: [{ text: { content: shippingAddress } }],
           },
-          '신청 스와치 목록': {
+          '신청 상품': {
             rich_text: [{ text: { content: swatchText } }],
           },
-          '기타 요청사항': {
+          '요청사항': {
             rich_text: [{ text: { content: requests || '' } }],
           },
-          '신청일시': {
+          '인입 일자': {
             rich_text: [{ text: { content: submittedAt } }],
           },
         },
