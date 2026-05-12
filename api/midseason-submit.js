@@ -67,7 +67,9 @@ export default async function handler(req, res) {
             rich_text: [{ text: { content: shippingAddress } }],
           },
           '신청 상품': {
-            rich_text: [{ text: { content: swatchText } }],
+            multi_select: Array.isArray(selectedSwatches)
+              ? selectedSwatches.map(function(name) { return { name: name }; })
+              : [],
           },
           '요청사항': {
             rich_text: [{ text: { content: requests || '' } }],
