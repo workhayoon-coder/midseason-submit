@@ -86,8 +86,6 @@ async function createArticle(accessToken, title, content, writer) {
       writer: writer,
       title: title,
       content: content,
-      html_yn: 'F',
-      password: '0000', // ✏️ 비회원 글쓰기에 비밀번호가 필수인 게시판일 수 있어 임시로 고정값 넣음
     },
   };
 
@@ -96,7 +94,7 @@ async function createArticle(accessToken, title, content, writer) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'X-Cafe24-Api-Version': '2022-09-01',
+      'X-Cafe24-Api-Version': '2026-03-01',
     },
     body: JSON.stringify(payload),
   });
