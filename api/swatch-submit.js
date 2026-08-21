@@ -9,6 +9,8 @@
 //       에러 메시지에 어떤 필드가 문제인지 나오니, 그 필드명에 맞춰 수정
 // ============================================================
 
+const { getStoredTokens, saveTokens } = require('../lib/cafe24Tokens');
+
 const CAFE24_MALL_ID = 'amcompanyam'; // ✏️ cafe24-callback.js와 동일하게 유지
 const BOARD_NO = 27; // ✏️ 스와치 신청 게시판 번호
 
@@ -28,6 +30,7 @@ module.exports = async function handler(req, res) {
     agreePrivacy,
     agreeMarketing,
     fabricList, // 문자열 (예: "로제왁스 (ROSE WAX), 럭스 (LUX)")
+    source, // 어느 랜딩페이지에서 보낸 신청인지 (예: "26/27 시즌리스 신제품 페이지")
   } = req.body;
 
   if (!name || !phone || !address) {
@@ -36,6 +39,7 @@ module.exports = async function handler(req, res) {
 
   const title = name + ' / ' + (company || '-');
   const content =
+    '신청 출처 : ' + (source || '알 수 없음') + '<br>' +
     '스와치 신청 원단 : ' + (fabricList || '-') + '<br>' +
     '성함 : ' + name + '<br>' +
     '업체/브랜드명 : ' + (company || '-') + '<br>' +
@@ -58,24 +62,23 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    let accessToken = process.env.CAFE24_ACCESS_TOKEN;
+    const stored = await getStoredTokens();
+    if (!stored || !stored.accessToken) {
+      return res.status(500).json({ error: '저장된 토큰이 없습니다. 최초 인증(cafe24-callback 접속)이 필요합니다.' });
+    }
 
+    let accessToken = stored.accessToken;
     let result = await createArticle(accessToken, title, content, name, clientIp);
 
-    // 액세스 토큰 만료(401)면 리프레시 토큰으로 재발급 후 1회 재시도
+    // 액세스 토큰 만료(401)면 리프레시 토큰으로 재발급 후, Notion에 새 토큰 저장하고 1회 재시도
     if (result.status === 401) {
-      const refreshed = await refreshAccessToken();
+      const refreshed = await refreshAccessToken(stored.refreshToken);
       if (!refreshed) {
         return res.status(500).json({ error: '토큰 갱신 실패. 재인증이 필요합니다.' });
       }
       accessToken = refreshed.access_token;
+      await saveTokens(stored.pageId, refreshed.access_token, refreshed.refresh_token);
       result = await createArticle(accessToken, title, content, name, clientIp);
-      // 참고: 여기서 갱신된 accessToken/refreshToken은 이번 요청에서만 쓰이고,
-      // Vercel 환경변수 자체는 자동으로 업데이트되지 않습니다.
-      // 즉 CAFE24_ACCESS_TOKEN이 계속 예전 값으로 남아있으면, 2시간마다
-      // 이 401 → 재발급 과정을 매번 반복하게 됩니다 (동작은 하지만 비효율적).
-      // refresh_token 자체도 2주 후 만료되므로, 그 전에 한 번씩은 수동으로
-      // 재인증(전에 했던 승인 URL 접속) 해주셔야 합니다.
     }
 
     if (result.status === 201 || result.status === 200) {
@@ -124,10 +127,9 @@ async function createArticle(accessToken, title, content, writer, clientIp) {
   return { status: r.status, body };
 }
 
-async function refreshAccessToken() {
+async function refreshAccessToken(refreshToken) {
   const CAFE24_CLIENT_ID = process.env.CAFE24_CLIENT_ID;
   const CAFE24_CLIENT_SECRET = process.env.CAFE24_CLIENT_SECRET;
-  const refreshToken = process.env.CAFE24_REFRESH_TOKEN;
   if (!CAFE24_CLIENT_ID || !CAFE24_CLIENT_SECRET || !refreshToken) return null;
 
   const basicAuth = Buffer.from(`${CAFE24_CLIENT_ID}:${CAFE24_CLIENT_SECRET}`).toString('base64');
