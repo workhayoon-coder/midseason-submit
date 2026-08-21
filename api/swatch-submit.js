@@ -96,6 +96,7 @@ async function createArticle(accessToken, title, content, writer) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
+      'X-Cafe24-Api-Version': '2022-09-01',
     },
     body: JSON.stringify(payload),
   });
