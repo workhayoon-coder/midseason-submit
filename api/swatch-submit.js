@@ -70,6 +70,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    console.error('cafe24 board api error:', result.status, JSON.stringify(result.body));
     return res.status(result.status).json({ error: '게시판 등록 실패', detail: result.body });
   } catch (e) {
     return res.status(500).json({ error: '서버 오류', detail: String(e) });
