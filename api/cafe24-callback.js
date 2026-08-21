@@ -2,10 +2,16 @@
 // Vercel Serverless Function — 카페24 OAuth 인증코드 → 액세스/리프레시 토큰 교환
 // 카페24 App 설정의 Redirect URI로 이 엔드포인트를 등록해두면,
 // 앱 설치(권한 승인) 시 카페24가 ?code=... 를 붙여서 이 주소로 리다이렉트해줍니다.
+//
+// ============================================================
+// ✏️ 이 파일에서 실제로 수정해야 하는 곳은 딱 1곳(6번째 줄)입니다.
+//    그 외 CLIENT_ID / CLIENT_SECRET / REDIRECT_URI 는 이 파일이 아니라
+//    Vercel "Environment Variables" 설정 화면에서 넣는 값이라 코드 수정 불필요.
+// ============================================================
 
-const CAFE24_MALL_ID = 'amcompanyam'; // 카페24 쇼핑몰 ID (도메인 앞부분, https://amcompanyam.cafe24.com 기준)
+const CAFE24_MALL_ID = 'amcompanyam'; // ✏️ 수정: 카페24 쇼핑몰ID (https://[여기].cafe24.com 의 [여기] 부분). 지금은 amcompanyam으로 맞춰뒀어요 — 다르면 이 문자열만 바꾸면 됩니다.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { code, error, error_description } = req.query;
 
   if (error) {
@@ -17,6 +23,7 @@ export default async function handler(req, res) {
     return res.status(400).send('인증코드(code)가 없습니다.');
   }
 
+  // 아래 3줄은 수정 불필요 — Vercel 환경변수에서 자동으로 읽어옵니다.
   const CAFE24_CLIENT_ID = process.env.CAFE24_CLIENT_ID;
   const CAFE24_CLIENT_SECRET = process.env.CAFE24_CLIENT_SECRET;
   const CAFE24_REDIRECT_URI = process.env.CAFE24_REDIRECT_URI; // 카페24 App에 등록한 것과 100% 동일해야 함
@@ -49,6 +56,9 @@ export default async function handler(req, res) {
       return res.status(tokenRes.status).json(tokenData);
     }
 
+    // 최초 1회용 화면 — access_token / refresh_token을 눈으로 보고
+    // Vercel 환경변수(CAFE24_ACCESS_TOKEN, CAFE24_REFRESH_TOKEN)에 복사해 넣기 위한 용도입니다.
+    // (이 값들은 비밀번호와 같으니 캡처해서 공유하지 말고, 확인 후 바로 이 페이지를 닫아주세요.)
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).send(`
       <html><body style="font-family:sans-serif; padding:40px; line-height:1.8;">
