@@ -36,13 +36,13 @@ module.exports = async function handler(req, res) {
 
   const title = name + ' / ' + (company || '-');
   const content =
-    '스와치 신청 원단 : ' + (fabricList || '-') + '\n' +
-    '성함 : ' + name + '\n' +
-    '업체/브랜드명 : ' + (company || '-') + '\n' +
-    '연락처 : ' + phone + '\n' +
-    '배송주소 : ' + address + '\n' +
-    '기타 문의사항 : ' + (memo || '-') + '\n' +
-    '개인정보 동의 : ' + (agreePrivacy ? '동의' : '미동의') + '\n' +
+    '스와치 신청 원단 : ' + (fabricList || '-') + '<br>' +
+    '성함 : ' + name + '<br>' +
+    '업체/브랜드명 : ' + (company || '-') + '<br>' +
+    '연락처 : ' + phone + '<br>' +
+    '배송주소 : ' + address + '<br>' +
+    '기타 문의사항 : ' + (memo || '-') + '<br>' +
+    '개인정보 동의 : ' + (agreePrivacy ? '동의' : '미동의') + '<br>' +
     '마케팅 동의 : ' + (agreeMarketing ? '동의' : '미동의');
 
   // client_ip는 카페24 API에서 필수 필드 — Vercel이 넘겨주는 헤더에서 방문자 IP 추출
