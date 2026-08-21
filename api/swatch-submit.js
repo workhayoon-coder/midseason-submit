@@ -87,6 +87,7 @@ async function createArticle(accessToken, title, content, writer) {
       title: title,
       content: content,
       html_yn: 'F',
+      password: '0000', // ✏️ 비회원 글쓰기에 비밀번호가 필수인 게시판일 수 있어 임시로 고정값 넣음
     },
   };
 
